@@ -4,10 +4,10 @@ import re
 
 def main():
     # Define argument parser
-    parser = argparse.ArgumentParser(description="Generate multiple MS- or XMS-CASPT2 files")
+    parser = argparse.ArgumentParser(description="Generate multiple SS-, MS- or XMS-CASPT2 files")
     parser.add_argument("basename", type=str, help="Previously run SA-CASSCF output file")
     parser.add_argument("--roots", type=int, required=True, help="Number of roots to generate")
-    parser.add_argument("--theory", choices=["ms-caspt2", "xms-caspt2"], required=True, help="Level of theory")
+    parser.add_argument("--theory", choices=["caspt2", "ms-caspt2", "xms-caspt2"], required=True, help="Level of theory: caspt2, ms-caspt2, xms-caspt2")
     parser.add_argument("--output_dir", type=str, default=".", help="Optional directory to save input files")
 
 
@@ -63,7 +63,28 @@ Multi=all
 IMAG=0.2
 Only={root}
 MAXITER=100
+""",
+        "caspt2": """>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneRel $Project.OneRel
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RasOrb INPORB
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RunFile $Project.RunFile
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneInt $Project.OneInt
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChDiag $Project.ChDiag
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChMap $Project.ChMap
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRed $Project.ChRed
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRst $Project.ChRst
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChVec1 $Project.ChVec1
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.NqGrid $Project.NqGrid
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.JobIph $Project.JobIph
+
+&CASPT2
+Multi=all
+NoMult
+IMAG=0.2
+Only={root}
+MAXITER=100
 """
+
+
     }
 
     # Select the template based on --theory
