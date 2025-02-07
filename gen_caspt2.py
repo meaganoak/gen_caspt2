@@ -1,44 +1,68 @@
 import argparse
+
 import os
 import re
 
+def create_sge_job_array(output_dir, base_name, theory, num_roots):
+    """Generate an SGE job array script."""
+    script_filename = os.path.join(output_dir, f"{base_name}_{theory}_job_array.sh")
+    with open(script_filename, "w") as script:
+        script.write("#!/bin/bash --login\n")
+        script.write("#$ -cwd\n")
+        script.write("#$ -V\n")
+        script.write(f"#$ -N {base_name}_{theory}\n")
+        script.write(f"#$ -t 1-{num_roots}\n")
+        script.write("#$ -pe smp.pe 4\n")  # Adjust parallel environment as needed
+        script.write("\n")
+        script.write("### Set up environment\n")
+        script.write("module load apps/gcc/openmolcas/21.02\n")  # Adjust for correct module
+        script.write("export OMP_NUM_THREADS=$NSLOTS\n")
+        script.write("TASK_ID=$SGE_TASK_ID\n")
+        script.write("\n")
+        script.write(f"export MOLCAS_PROJECT={base_name}_{theory}_root_$SGE_TASK_ID\n")
+        script.write("export MOLCAS_MEM=12000\n")
+        script.write("export MOLCAS_DISK=20000\n")
+        script.write("export MOLCAS_PRINT=2\n")
+        script.write("export MOLCAS_MOLDEN=ON\n")
+        script.write("export CurrDir=$(pwd -P)\n")
+        script.write("export WorkDir=/scratch/$USER/$MOLCAS_PROJECT\n")
+        script.write("\n")
+        script.write("### Main body\n")
+        script.write("mkdir -p $WorkDir\n")
+        script.write("\n")
+
+        script.write(f"pymolcas {base_name}_{theory}_root_$SGE_TASK_ID.inp 2>> {base_name}_{theory}_root_$SGE_TASK_ID.err 1>> {base_name}_{theory}_root_$SGE_TASK_ID.out\n")
+        script.write("mkdir -p $WorkDir\n")
+
+    print(f"SGE job array script created: {script_filename}")
+
 def main():
-    # Define argument parser
-    parser = argparse.ArgumentParser(description="Generate multiple SS-, MS- or XMS-CASPT2 files")
+    parser = argparse.ArgumentParser(description="Generate multiple CASPT2 input files and SGE job script")
     parser.add_argument("basename", type=str, help="Previously run SA-CASSCF output file")
     parser.add_argument("--roots", type=int, required=True, help="Number of roots to generate")
-    parser.add_argument("--theory", choices=["caspt2", "ms-caspt2", "xms-caspt2"], required=True, help="Level of theory: caspt2, ms-caspt2, xms-caspt2")
-    parser.add_argument("--output_dir", type=str, default=".", help="Optional directory to save input files")
+    parser.add_argument("--theory", choices=["caspt2", "ms-caspt2", "xms-caspt2"], required=True, help="CASPT2 variant")
+    parser.add_argument("--output_dir", type=str, default=".", help="Output directory")
 
-
-    # Parse arguments
     args = parser.parse_args()
-
-    # Extract base name from the filename argument
-    if not args.basename.endswith(".out"):
-        raise ValueError("The provided filename must have a .out extension")
     base_name = os.path.splitext(args.basename)[0]
-
     user = os.getenv("USER")
     if not user:
         raise EnvironmentError("USER environment variable not found")
-
-    output_dir = args.output_dir
-    os.makedirs(output_dir, exist_ok=True)
+    os.makedirs(args.output_dir, exist_ok=True)
 
     # Define templates
     templates = {
-        "xms-caspt2": """>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneRel $Project.OneRel
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RasOrb INPORB
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RunFile $Project.RunFile
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneInt $Project.OneInt
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChDiag $Project.ChDiag
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChMap $Project.ChMap
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRed $Project.ChRed
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRst $Project.ChRst
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChVec1 $Project.ChVec1
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.NqGrid $Project.NqGrid
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.JobIph $Project.JobIph
+        "xms-caspt2": """>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.OneRel $Project.OneRel
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.RasOrb INPORB
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.RunFile $Project.RunFile
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.OneInt $Project.OneInt
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChDiag $Project.ChDiag
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChMap $Project.ChMap
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRed $Project.ChRed
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRst $Project.ChRst
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec1 $Project.ChVec1
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.NqGrid $Project.NqGrid
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.JobIph $Project.JobIph
 
 &CASPT2
 XMulti=all
@@ -46,17 +70,17 @@ IMAG=0.2
 Only={root}
 MAXITER=100
 """,
-        "ms-caspt2": """>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneRel $Project.OneRel
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RasOrb INPORB
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RunFile $Project.RunFile
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneInt $Project.OneInt
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChDiag $Project.ChDiag
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChMap $Project.ChMap
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRed $Project.ChRed
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRst $Project.ChRst
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChVec1 $Project.ChVec1
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.NqGrid $Project.NqGrid
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.JobIph $Project.JobIph
+        "ms-caspt2": """>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.OneRel $Project.OneRel
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.RasOrb INPORB
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.RunFile $Project.RunFile
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.OneInt $Project.OneInt
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChDiag $Project.ChDiag
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChMap $Project.ChMap
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRed $Project.ChRed
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRst $Project.ChRst
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec1 $Project.ChVec1
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.NqGrid $Project.NqGrid
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.JobIph $Project.JobIph
 
 &CASPT2
 Multi=all
@@ -64,17 +88,17 @@ IMAG=0.2
 Only={root}
 MAXITER=100
 """,
-        "caspt2": """>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneRel $Project.OneRel
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RasOrb INPORB
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.RunFile $Project.RunFile
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.OneInt $Project.OneInt
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChDiag $Project.ChDiag
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChMap $Project.ChMap
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRed $Project.ChRed
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChRst $Project.ChRst
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.ChVec1 $Project.ChVec1
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.NqGrid $Project.NqGrid
->>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}.JobIph $Project.JobIph
+        "caspt2": """>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.OneRel $Project.OneRel
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.RasOrb INPORB
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.RunFile $Project.RunFile
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.OneInt $Project.OneInt
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChDiag $Project.ChDiag
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChMap $Project.ChMap
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRed $Project.ChRed
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRst $Project.ChRst
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec1 $Project.ChVec1
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.NqGrid $Project.NqGrid
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.JobIph $Project.JobIph
 
 &CASPT2
 Multi=all
@@ -87,23 +111,17 @@ MAXITER=100
 
     }
 
-    # Select the template based on --theory
+
     template = templates[args.theory]
-
-    # Create input files
     for root in range(1, args.roots + 1):
-        content = template.format(
-            root=root,
-            user=user,
-            base_name=base_name,  # Pass the extracted base name
-        )
-        output_filename = os.path.join(output_dir, f"{base_name}_{args.theory}_root_{root}.inp")
-
-
-        # Write content to file
+        content = template.format(root=root, user=user, base_name=base_name)
+        output_filename = os.path.join(args.output_dir, f"{base_name}_{args.theory}_root_{root}.inp")
         with open(output_filename, "w") as file:
             file.write(content)
         print(f"Created file: {output_filename}")
 
+    create_sge_job_array(args.output_dir, base_name, args.theory, args.roots)
+
 if __name__ == "__main__":
     main()
+
