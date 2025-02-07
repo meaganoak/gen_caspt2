@@ -61,6 +61,13 @@ def main():
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRed $Project.ChRed
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRst $Project.ChRst
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec1 $Project.ChVec1
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec2 $Project.ChVec2
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec3 $Project.ChVec3
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec4 $Project.ChVec4
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec5 $Project.ChVec5
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec6 $Project.ChVec6
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec7 $Project.ChVec7
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec8 $Project.ChVec8
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.NqGrid $Project.NqGrid
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.JobIph $Project.JobIph
 
@@ -79,6 +86,13 @@ MAXITER=100
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRed $Project.ChRed
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRst $Project.ChRst
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec1 $Project.ChVec1
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec2 $Project.ChVec2
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec3 $Project.ChVec3
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec4 $Project.ChVec4
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec5 $Project.ChVec5
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec6 $Project.ChVec6
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec7 $Project.ChVec7
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec8 $Project.ChVec8
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.NqGrid $Project.NqGrid
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.JobIph $Project.JobIph
 
@@ -97,6 +111,13 @@ MAXITER=100
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRed $Project.ChRed
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChRst $Project.ChRst
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec1 $Project.ChVec1
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec2 $Project.ChVec2
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec3 $Project.ChVec3
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec4 $Project.ChVec4
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec5 $Project.ChVec5
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec6 $Project.ChVec6
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec7 $Project.ChVec7
+>>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.ChVec8 $Project.ChVec8
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.NqGrid $Project.NqGrid
 >>COPY /mnt/iusers01/chem01/{user}/scratch/{base_name}/{base_name}.JobIph $Project.JobIph
 
